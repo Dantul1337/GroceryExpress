@@ -8,7 +8,8 @@
     "server": "nodemon --exec tsx server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "seed": "tsx seed.ts"
   },
   "keywords": [],
   "author": "",
