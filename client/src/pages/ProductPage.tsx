@@ -2,11 +2,11 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useEffect, useState } from 'react';
 import type { Product } from '../types';
-import { dummyProducts, categoriesData } from '../assets/assets';
 import Loading from '../components/Loading';
 import { ArrowLeftIcon, ArrowRightIcon, HomeIcon, LeafIcon, MinusIcon, PlusIcon, ShoppingCartIcon, StarIcon } from 'lucide-react';
 import DummyReviewsSection from '../assets/DummyReviewsSection';
 import ProductCard from '../components/ProductCard';
+import api from '../config/api';
 
 const ProductPage = () => {
   const currency = import.meta.env.VITE_CURRENCY_SYMBOL || '$';
@@ -23,23 +23,25 @@ const ProductPage = () => {
     setLoading(true);
     setLocalQuantity(1);
     window.scrollTo(0, 0);
-    const product = dummyProducts.find((p) => p._id === id);
-    setProduct(product!);
-    setRelatedProducts(dummyProducts.filter((p) => p._id !== id));
-    setLoading(false);
+    api.get(`/products/${id}`).then(({data}) => {
+      setProduct(data.product)
+      return api.get(`/products?category=${data.product.category}`)
+    }).then(({data}) => {
+      setRelatedProducts(data.products.filter((p: Product) => p.id !== id))
+    }).catch(() => navigate("/products")).finally(() => setLoading(false))
   }, [id, navigate]);
 
   if (loading) return <Loading />;
   if (!product) return null;
 
-  const cartItem = items.find((item) => item.product._id === product._id);
+  const cartItem = items.find((item) => item.product.id === product.id);
   const inCart = !!cartItem;
   const displayQuantity = inCart ? cartItem.quantity : localQuanity;
 
   const handleMinus = () => {
     if (inCart) {
-      if (cartItem.quantity > 1) updateQuantity(product._id, cartItem.quantity - 1);
-      else removeFromCart(product._id);
+      if (cartItem.quantity > 1) updateQuantity(product.id, cartItem.quantity - 1);
+      else removeFromCart(product.id);
     } else {
       setLocalQuantity(Math.max(1, localQuanity - 1));
     }
@@ -47,11 +49,11 @@ const ProductPage = () => {
 
   const handlePlus = () => {
     if (inCart) {
-      updateQuantity(product._id, cartItem.quantity + 1);
+      updateQuantity(product.id, cartItem.quantity + 1);
     }
   };
 
-  const categoryLabel = categoriesData.find((c) => c.slug === product.category)?.name || product.category.replace(/-/g, ' ');
+  const categoryLabel = product.category.replace(/-/g, ' ');
   return (
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -60,7 +62,7 @@ const ProductPage = () => {
             <HomeIcon className="size-4" />
           </Link>
           <Link to="/products" className="hover:text-app-green transition-colors">
-            Товары
+            Products
           </Link>
           <span>/</span>
           <Link to={`/products?category=${product.category}`} className="hover:text-app-green transition-colors capitalize">
@@ -72,7 +74,7 @@ const ProductPage = () => {
         <button
           onClick={() => navigate(-1)}
           className="mb-6 flex items-center gap-1.5 text-sm text-app-text-light hover:text-app-green transition-colors">
-          <ArrowLeftIcon className="size-4" /> Назад
+          <ArrowLeftIcon className="size-4" /> Back
         </button>
         <div className="bg-white/50 rounded-2xl overflow-hidden">
           <div className="grid md:grid-cols-2 gap-0">
@@ -85,7 +87,7 @@ const ProductPage = () => {
                   </span>
                 )}
                 {product.discount > 0 && (
-                  <span className="px-2.5 py-1 text-xs font-semibold bg-app-orange text-white rounded-full">-{product.discount}%</span>
+                  <span className="px-2.5 py-1 text-xs font-semibold bg-app-orange text-white rounded-full">{product.discount}% OFF</span>
                 )}
               </div>
             </div>
@@ -103,7 +105,7 @@ const ProductPage = () => {
                     ))}
                   </div>
                   <span className="text-sm font-medium">{product.rating}</span>
-                  <span className="text-sm text-app-text-light">({product.reviewCount} отзывов)</span>
+                  <span className="text-sm text-app-text-light">({product.reviewCount} reviews)</span>
                 </div>
               )}
               <div className="flex items-baseline gap-3 mb-5">
@@ -121,9 +123,9 @@ const ProductPage = () => {
               <p className="text-sm text-app-text-light leading-relaxed mb-6">{product.description}</p>
               <div className="mb-6">
                 {product.stock > 0 ? (
-                  <span className="text-sm text-app-success font-medium">✔ В наличии ({product.stock} шт.)</span>
+                  <span className="text-sm text-app-success font-medium">✔ In Stock ({product.stock} available)</span>
                 ) : (
-                  <span className="text-sm text-app-error font-medium">Нет в наличии</span>
+                  <span className="text-sm text-app-error font-medium">Out of Stock</span>
                 )}
               </div>
               <div className="flex items-center gap-3">
@@ -143,7 +145,7 @@ const ProductPage = () => {
                   disabled={product.stock === 0}
                   className={`flex-1 py-3 font-semibold rounded-xl transition-colors flex-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] ${inCart ? 'bg-app-cream text-app-green border border-app-green' : 'bg-app-orange text-white hover:bg-app-orange-dark'}`}>
                   <ShoppingCartIcon className="w-4 h-4" />
-                  {inCart ? 'В корзине' : 'В корзину'}
+                  {inCart ? 'Added to Cart' : 'Add to Cart'}
                 </button>
               </div>
             </div>
@@ -154,16 +156,16 @@ const ProductPage = () => {
           <section className="mt-12 mb-44">
             <div className='flex items-center justify-between mb-6'>
               <div>
-                <h2 className='text-2xl font-semibold text-app-green'>Похожие товары</h2>
-                <p className='text-sm text-app-text-light mt-1'>Ещё из категории «{categoryLabel}»</p>
+                <h2 className='text-2xl font-semibold text-app-green'>Related Products</h2>
+                <p className='text-sm text-app-text-light mt-1'>More from {categoryLabel}</p>
               </div>
               <Link to={`/products?category=${product.category}`} className='text-sm font-semibold text-app-orange hover:text-app-orange-dark flex items-center gap-1 transition-colors'>
-              Смотреть все <ArrowRightIcon className='size-4' />
+              View All <ArrowRightIcon className='size-4' />
               </Link>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 xl:gap-8">
               {relatedProducts.slice(0, 5).map((rp) => (
-                <ProductCard key={rp._id} product={rp} />
+                <ProductCard key={rp.id} product={rp} />
               ))}
             </div>
           </section>

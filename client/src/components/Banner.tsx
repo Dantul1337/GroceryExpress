@@ -16,12 +16,12 @@ const Banner = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex-center gap-6">
                     <div className="flex-center gap-2">
                         <TruckIcon className="size-4 shrink-0" />
-                        <span>Бесплатная доставка при заказе от 2000 ₽</span>
+                        <span>Free delivery on orders above $20</span>
                     </div>
                     <span className="hidden sm:inline text-white/40">|</span>
                     <div className="hidden sm:flex items-center gap-2">
                         <ZapIcon className="size-3.5 fill-yellow-400 text-yellow-400 shrink-0" />
-                        <span>Свежие продукты с фермы каждый день</span>
+                        <span>Farm-fresh produce delivered daily</span>
                     </div>
                 </div>
                 <button onClick={dismissBanner} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-whit/10 rounded-full transition-colors">

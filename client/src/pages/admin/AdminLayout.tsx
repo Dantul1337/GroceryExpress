@@ -1,17 +1,24 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { Navigate, NavLink, Outlet } from "react-router-dom";
 import { PlusIcon, PackageSearchIcon, ShoppingBagIcon, LogOutIcon, BarChart3Icon, ShieldIcon, Truck } from "lucide-react";
 import Navbar from "../../components/Navbar";
+import { useAuth } from "../../context/authContext";
 
 export default function AdminLayout() {
 
+    const {user} = useAuth()
+
     const AdminLinkData = [
-        { to: "/admin", label: "Дашборд", icon: BarChart3Icon },
-        { to: "/admin/products/new", label: "Добавить товар", icon: PlusIcon },
-        { to: "/admin/products", label: "Товары", icon: PackageSearchIcon },
-        { to: "/admin/orders", label: "Заказы", icon: ShoppingBagIcon },
-        { to: "/admin/delivery-partners", label: "Курьеры", icon: Truck },
-        { to: "/", label: "Выход", icon: LogOutIcon },
+        { to: "/admin", label: "Dashboard", icon: BarChart3Icon },
+        { to: "/admin/products/new", label: "Add Product", icon: PlusIcon },
+        { to: "/admin/products", label: "Products", icon: PackageSearchIcon },
+        { to: "/admin/orders", label: "Orders", icon: ShoppingBagIcon },
+        { to: "/admin/delivery-partners", label: "Delivery Partners", icon: Truck },
+        { to: "/", label: "Exit", icon: LogOutIcon },
     ]
+
+    if(!user?.isAdmin){
+        return <Navigate to="/" replace />
+    }
 
     return (
         <div className="h-screen overflow-hidden">
@@ -23,7 +30,7 @@ export default function AdminLayout() {
                 <aside className="w-full lg:w-64 shrink-0 h-fit bg-white rounded-2xl p-4 border border-app-border">
                     <div className="pb-4 mb-4 border-b border-app-border">
                         <h2 className="text-lg font-semibold text-app-green flex items-center gap-2 px-2">
-                            <ShieldIcon className="size-5 text-green-900" /> Панель администратора
+                            <ShieldIcon className="size-5 text-green-900" /> Admin Panel
                         </h2>
                     </div>
                     <nav className="flex flex-col gap-1.5">

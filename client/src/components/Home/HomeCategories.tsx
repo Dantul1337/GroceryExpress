@@ -5,8 +5,8 @@ const HomeCategories = () => {
     <section className="py-16">
       <div className="max-w-7xl mx-auto">
         <div>
-          <h2 className="text-2xl font-semibold">Категории товаров</h2>
-          <p className="text-sm text-app-text-light mt-1">Найдите именно то, что вам нужно</p>
+          <h2 className="text-2xl font-semibold">Browse Categories</h2>
+          <p className="text-sm text-app-text-light mt-1">Find exactly what you need using</p>
         </div>
         <div className="flex items-center mt-8 overflow-x-scroll no-scrollbar">
           {categoriesData.map((cat) => (

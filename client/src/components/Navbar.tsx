@@ -15,9 +15,10 @@ import {
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/authContext';
 
 const Navbar = () => {
-  const user: any = {name: "John Doe", email: "john@example.com", isAdmin: true}
+  const {user, logout} = useAuth()
   const { cartCount, setIsCartOpen } = useCart()
   const [searchQuery, setSearchQuery] = useState('');
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -32,6 +33,7 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
+    logout()
     setUserMenuOpen(false);
     navigate('/');
   };
@@ -43,10 +45,10 @@ const Navbar = () => {
         </Link>
         <div className="w-full flex items-center justify-end gap-4 lg:gap-10">
           <div className="hidden md:flex items-center gap-6 text-sm text-zinc-600">
-            <Link to="/">Главная</Link>
-            <Link to="/products">Товары</Link>
+            <Link to="/">Home</Link>
+            <Link to="/products">Products</Link>
             <Link to="/deals" className="text-app-orange">
-              Акции
+              Deals
             </Link>
           </div>
           <form onSubmit={handleSearch} className="hidden sm:flex flex-1 max-w-sm text-xs sm:text-sm">
@@ -54,7 +56,7 @@ const Navbar = () => {
               <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-zinc-500" />
               <input
                 type="text"
-                placeholder="Поиск продуктов..."
+                placeholder="Search for groceries..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-8 p-2 bg-orange-50 rounded-full ring ring-app-orange/15 focus:ring-app-orange/30"
@@ -81,7 +83,7 @@ const Navbar = () => {
                   <Link
                     to="/login"
                     className="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-950 rounded-full hover:bg-green-950-light transition-colors">
-                    <UserIcon size={16} /> Войти
+                    <UserIcon size={16} /> Sign In
                   </Link>
                   {userMenuOpen ? (
                     <XIcon className="md:hidden" onClick={() => setUserMenuOpen(!userMenuOpen)} />
@@ -104,33 +106,33 @@ const Navbar = () => {
                       {!user && (
                         <Link to="/login" className="dropdown-link">
                           <UserIcon size={16} />
-                          Войти
+                          Sign In
                         </Link>
                       )}
                       {user && (
                         <Link to="/orders" className="dropdown-link">
                           <PackageIcon size={16} />
-                          Мои заказы
+                          My Orders
                         </Link>
                       )}
                       {user && (
                         <Link to="/addresses" className="dropdown-link">
                           <MapPinIcon size={16} />
-                          Адреса
+                          Addresses
                         </Link>
                       )}
                       <Link to="/products" className="dropdown-link md:hidden">
                         <ArrowUpRightIcon size={16} />
-                        Товары
+                        Products
                       </Link>
                       <Link to="/deals" className="dropdown-link md:hidden">
                         <ArrowUpRightIcon size={16} />
-                        Акции
+                        Deals
                       </Link>
                       {user?.isAdmin && (
                         <Link to="/admin/products" className="dropdown-link">
                           <ShieldIcon className="text-app-orange-dark" size={16} />
-                          <span className="text-app-orange-dark">Панель администратора</span>
+                          <span className="text-app-orange-dark">Admin Panel</span>
                         </Link>
                       )}
                       {user && (
@@ -138,7 +140,7 @@ const Navbar = () => {
                           <button
                             onClick={handleLogout}
                             className="flex items-center gap-3 px-4 py-2.5 text-sm text-app-error hover:bg-red-50 w-full transition-colors">
-                            <LogOutIcon size={16} /> Выйти
+                            <LogOutIcon size={16} /> Logout
                           </button>
                         </div>
                       )}

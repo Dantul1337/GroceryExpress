@@ -1,25 +1,27 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { dummyAddressData } from '../assets/assets';
 import { ArrowLeft, CheckIcon, ChevronRightIcon, CreditCardIcon, MapPinIcon } from 'lucide-react';
 import CheckoutAddress from '../components/Checkout/CheckoutAddress';
 import CheckoutPayment from '../components/Checkout/CheckoutPayment';
 import CheckoutReview from '../components/Checkout/CheckoutReview';
+import api from '../config/api';
+import toast from 'react-hot-toast';
+import { useAuth } from '../context/authContext';
 
 const CheckOut = () => {
   const navigate = useNavigate();
   const currency = import.meta.env.VITE_CURRENCY_SYMBOL || '$';
 
-  const { items, cartTotal } = useCart();
-  const { user } = { user: { addresses: dummyAddressData } };
+  const { items, cartTotal, clearCart } = useCart();
+  const { user } = useAuth()
 
   const [step, setStep] = useState('address');
   const [loading, setLoading] = useState(false);
 
   const [address, setAddress] = useState({
-    _id: '',
-    label: 'Дом',
+    id: '',
+    label: 'Home',
     address: '',
     city: '',
     state: '',
@@ -35,21 +37,46 @@ const CheckOut = () => {
   const total = cartTotal + deliveryFee + tax;
 
   const steps: { key: string; label: string; icon: typeof MapPinIcon }[] = [
-    { key: 'address', label: 'Адрес', icon: MapPinIcon },
-    { key: 'payment', label: 'Оплата', icon: CreditCardIcon },
-    { key: 'review', label: 'Проверка', icon: CheckIcon },
+    { key: 'address', label: 'Address', icon: MapPinIcon },
+    { key: 'payment', label: 'Payment', icon: CreditCardIcon },
+    { key: 'review', label: 'Review', icon: CheckIcon },
   ];
 
   const handlePlaceOrder = async () => {
     setLoading(true);
-    navigate('/orders');
+    try {
+      const orderData = {
+        items: items.map((item) => ({
+          product: item.product.id,
+          quantity: item.quantity
+        })),
+        shippingAddress: address,
+        paymentMethod
+      }
+
+      const {data} = await api.post("/orders", orderData)
+      console.log(data)
+
+      if(data.url){
+        window.location.href = data.url
+        return
+      }
+      clearCart()
+      toast.success("Order placed successfully!")
+      navigate(`/orders/${data.order.id}`)
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || error.message)
+    } finally {
+      setLoading(false)
+      scrollTo(0, 0)
+    }
   };
 
   useState(() => {
     if (user?.addresses?.length) {
       const defaultAddr = user.addresses.find((a) => a.isDefault) || user.addresses[0];
       setAddress({
-        _id: defaultAddr?._id,
+        id: defaultAddr?.id,
         label: defaultAddr?.label,
         address: defaultAddr?.address,
         city: defaultAddr?.city,
@@ -66,11 +93,11 @@ const CheckOut = () => {
       <div className='min-h-screen bg-app-cream flex-center'>
         <div className='text-center'>
           <h2 className='text-xl font-semibold text-app-green mb-2'>
-            Ваша корзина пуста
+            Your cart is empty
           </h2>
-          <p className='text-sm text-app-text-light mb-4'>Добавьте товары, чтобы оформить заказ</p>
+          <p className='text-sm text-app-text-light mb-4'>Add some products to checkout</p>
           <button onClick={() => navigate('/products')} className='px-5 py-2.5 bg-app-green text-white text-sm font-medium rounded-xl hover:bg-app-green-light transition-colors'>
-            Смотреть товары
+            Browse Products
           </button>
         </div>
       </div>
@@ -79,9 +106,9 @@ const CheckOut = () => {
   return <div className='min-h-screen bg-app-cream'>
     <div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
       <button onClick={() => navigate(-1)} className='flex items-center gap-2 text-sm text-app-text-light hover:text-app-green mb-6 transition-colors'>
-        <ArrowLeft className='size-4' /> Назад
+        <ArrowLeft className='size-4' /> Back
       </button>
-      <h1 className='text-2xl font-semibold text-app-green mb-8'>Оформление заказа</h1>
+      <h1 className='text-2xl font-semibold text-app-green mb-8'>Checkout</h1>
       <div className='flex items-center gap-2 mb-8'>
         {steps.map((s, i) => (
           <div key={s.key} className='flex items-center gap-2'>
@@ -99,22 +126,22 @@ const CheckOut = () => {
           {step === "review" && <CheckoutReview address={address} items={items} handlePlaceOrder={handlePlaceOrder} loading={loading} total={total}/>}
         </div>
         <div className='bg-white rounded-2xl p-5 h-fit sticky top-24'>
-          <h3 className='text-sm font-semibold text-app-green mb-4'>Сводка заказа</h3>
+          <h3 className='text-sm font-semibold text-app-green mb-4'>Order Summary</h3>
           <div className='space-y-2 text-sm'>
             <div className='flex justify-between'>
-              <span className='text-app-text-light'>Товары ({items.length} шт.)</span>
+              <span className='text-app-text-light'>Subtotal ({items.length} items)</span>
               <span>{currency}{cartTotal.toFixed(2)}</span>
             </div>
             <div className='flex justify-between'>
-              <span className='text-app-text-light'>Доставка</span>
-              <span>{deliveryFee === 0 ? <span className='text-app-success'>Бесплатно</span> : `${currency}${deliveryFee.toFixed(2)}`}</span>
+              <span className='text-app-text-light'>Delivery</span>
+              <span>{deliveryFee === 0 ? <span className='text-app-success'>Free</span> : `${currency}${deliveryFee.toFixed(2)}`}</span>
             </div>
             <div className='flex justify-between'>
-              <span className='text-app-text-light'>Налог</span>
+              <span className='text-app-text-light'>Tax</span>
               <span>{currency}{tax.toFixed(2)}</span>
             </div>
             <div className='flex justify-between pt-3 border-t border-app-border text-base font-semibold'>
-              <span>Итого</span>
+              <span>Total</span>
               <span className='text-app-green'>{currency}{total.toFixed(2)}</span>
             </div>
           </div>

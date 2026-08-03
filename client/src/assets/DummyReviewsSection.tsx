@@ -15,14 +15,14 @@ const REVIEWERS = [
 ];
 
 const COMMENTS = [
-    "Просто в восторге от этого продукта! Свежий и качественный. Обязательно закажу ещё раз.",
-    "Хорошее соотношение цены и качества. Упаковка аккуратная, доставка вовремя.",
-    "Качество приличное, хотя ожидал чуть посвежее. В целом хорошая покупка.",
-    "Теперь это постоянный товар на моей кухне. Всем рекомендую!",
-    "Превзошло все ожидания. Вкус и свежесть на высшем уровне. Пять звёзд!",
-    "Неплохо! Не самое лучшее из того, что пробовал, но своих денег стоит.",
-    "Пришло в отличном состоянии. Очень доволен покупкой, скоро закажу ещё.",
-    "Отличный продукт, вся семья в восторге. Органическое качество чувствуется во вкусе.",
+    "Absolutely love this product! Fresh and great quality. Will definitely order again.",
+    "Good value for the price. Packaging was neat and delivery was on time.",
+    "Quality is decent but I expected it to be a bit fresher. Still a solid buy overall.",
+    "This has become a staple in my kitchen now. Highly recommended for everyone!",
+    "Exceeded my expectations. The taste and freshness were top-notch. Five stars!",
+    "Pretty good! Not the absolute best I've had, but definitely worth the price.",
+    "Arrived in perfect condition. Very satisfied with the purchase, ordering more soon.",
+    "Great product, my family loved it. The organic quality really shows in the taste.",
 ];
 
 function seededRandom(seed: string) {
@@ -33,7 +33,7 @@ function seededRandom(seed: string) {
 
 export default function DummyReviewsSection({ product }: { product: Product }) {
     const reviews = useMemo(() => {
-        const rng = seededRandom(product._id);
+        const rng = seededRandom(product.id);
         const count = Math.min(product.reviewCount, 6);
         const daysAgo = [3, 7, 14, 21, 35, 48];
         return Array.from({ length: count }, (_, i) => {
@@ -44,7 +44,7 @@ export default function DummyReviewsSection({ product }: { product: Product }) {
                 id: i,
                 ...r,
                 rating,
-                date: d.toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" }),
+                date: d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
                 comment: COMMENTS[(Math.floor(rng() * COMMENTS.length) + i) % COMMENTS.length],
                 helpful: Math.floor(rng() * 20) + 1,
             };
@@ -62,7 +62,7 @@ export default function DummyReviewsSection({ product }: { product: Product }) {
 
     return (
         <section className="mt-10 ">
-            <h2 className="text-2xl font-semibold text-app-green mb-6">Отзывы покупателей</h2>
+            <h2 className="text-2xl font-semibold text-app-green mb-6">Customer Reviews</h2>
 
             <div className="bg-white/50 rounded-2xl p-6 md:p-8">
                 {/* Summary row */}
@@ -75,7 +75,7 @@ export default function DummyReviewsSection({ product }: { product: Product }) {
                                 <StarIcon key={s} className={`size-4 ${s <= Math.round(product.rating) ? "text-app-warning fill-app-warning" : "text-app-border"}`} />
                             ))}
                         </div>
-                        <span className="text-sm text-zinc-600">{product.reviewCount} отзывов</span>
+                        <span className="text-sm text-zinc-600">{product.reviewCount} reviews</span>
                     </div>
 
                     {/* Breakdown bars */}
@@ -112,7 +112,7 @@ export default function DummyReviewsSection({ product }: { product: Product }) {
                                 </div>
                                 <p className="text-sm text-zinc-600 leading-relaxed">{review.comment}</p>
                                 <button className="mt-2 flex items-center gap-1.5 text-xs text-zinc-600 hover:text-app-green transition-colors">
-                                    <ThumbsUpIcon className="size-3.5" /> Полезно ({review.helpful})
+                                    <ThumbsUpIcon className="size-3.5" /> Helpful ({review.helpful})
                                 </button>
                             </div>
                         </div>

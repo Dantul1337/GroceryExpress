@@ -10,8 +10,11 @@ import { inngest, functions } from "./inngest/index.js"
 import addressRouter from "./routes/addressRoutes.js";
 import adminRouter from "./routes/adminRoutes.js";
 import deliveryPartnerRouter from "./routes/deliveryPartnersRoutes.js";
+import { stripeWebhook } from "./controllers/webhook.js";
 
 const app = express();
+
+app.post('/api/stripe', express.raw({type: 'application/json'}), stripeWebhook)
 
 app.use(cors())
 app.use(express.json());
@@ -29,7 +32,7 @@ app.use('/api/orders', orderRouter)
 app.use("/api/inngest", serve({ client: inngest, functions }));
 app.use('/api/addresses', addressRouter)
 app.use('/api/admin', adminRouter)
-app.unsubscribe('/api/delivery', deliveryPartnerRouter)
+app.use('/api/delivery', deliveryPartnerRouter)
 
 // Error handling
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
