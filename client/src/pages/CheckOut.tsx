@@ -7,7 +7,7 @@ import CheckoutPayment from '../components/Checkout/CheckoutPayment';
 import CheckoutReview from '../components/Checkout/CheckoutReview';
 import api from '../config/api';
 import toast from 'react-hot-toast';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../context/AuthContext';
 
 const CheckOut = () => {
   const navigate = useNavigate();
